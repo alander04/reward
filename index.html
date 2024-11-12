@@ -16,10 +16,10 @@
             font-size: 2em;
             margin-bottom: 20px;
         }
-        .logo-image {
-            width: 180px; 
+        #logo img {
+            max-width: 180px; 
             aspect-ratio: 4/3;
-            objet-fit: cover
+            object-fit: cover;
         }
         #loginForm, #categories, #adminPanel {
             background-color: rgb(169, 211, 198);
@@ -55,9 +55,8 @@
     </style>
 </head>
 <body>
-    <div id="Rewards logo">
-        <img src="/row.jpg" alt="logo">
-     /row.jpg" alt="logo">
+    <div id="logo">
+        <img src="row.jpg" alt="logo">
     </div>
 
     <div id="loginForm">
@@ -84,14 +83,11 @@
             { username: "user2", password: "pass2", isAdmin: false }
         ];
 
-        
         const categories = [
             { name: "Meilleur Chanteur", nominees: ["JEAN", "LOU"], descriptions: ["Parce qu'il a une belle voix", "Parce qu'elle a un beau visage"] },
             { name: "Meilleur Acteur", nominees: ["Pierre", "Marie"], descriptions: ["Pour sa performance dans le film X", "Pour son rôle dans la série Y"] },
-            
         ];
 
-        // Votes (simulés)
         let votes = [];
 
         function login() {
@@ -132,7 +128,7 @@
         function vote(categoryIndex, nominee) {
             votes.push({ category: categories[categoryIndex].name, nominee: nominee });
             alert(`Vote enregistré pour ${nominee} dans la catégorie ${categories[categoryIndex].name}`);
-            if (document.getElementById('adminPanel').classList.contains('hidden') === false) {
+            if (!document.getElementById('adminPanel').classList.contains('hidden')) {
                 showVoteResults();
             }
         }
