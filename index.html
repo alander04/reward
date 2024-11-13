@@ -74,6 +74,7 @@
     <div id="adminPanel" class="hidden">
         <h2>Panel Administrateur</h2>
         <div id="voteResults"></div>
+        <button onclick="addCategory()">Ajouter une catégorie</button>
     </div>
 
     <script>
@@ -94,13 +95,14 @@
             { username: "sr@D19", password: "SR19%", isAdmin: false },
         ];
 
-        const categories = [
+        let categories = [
             { name: "Meilleur(e) Président(e)", nominees: ["Luxel", "Eryne", "Sorelle", "Alane", "Harold", "Manich", "Steve", "Nicky"], descriptions: ["Affaires Inutiles", "PDG", "Finances", "Affaires Internes", "Chargé de Communication mais qui ne parle pas beaucoup", "Technique", "Clash gratuits", "Sécrétaire générale"] },
-            { name: "Team O ou E", nominees: ["OKOK", "ERU"] },
-            { name: "Meilleur centre de répétition", nominees: ["ORA", "COREX", "PSA", "Domicile", "Centre où sorelle faisait les cours j'ai oublié le nom" ] },
+            { name: "Team O ou E", nominees: ["OKOK", "ERU"], descriptions: ["", ""] },
+            { name: "Meilleur centre de répétition", nominees: ["ORA", "COREX", "PSA", "Domicile", "Centre où sorelle faisait les cours j'ai oublié le nom"], descriptions: ["", "", "", "", ""] },
         ];
 
         let votes = [];
+        let currentUser = null;
 
         function login() {
             const username = document.getElementById('username').value;
@@ -108,13 +110,15 @@
             const user = users.find(u => u.username === username && u.password === password);
 
             if (user) {
+                currentUser = user;
                 document.getElementById('loginForm').classList.add('hidden');
-                document.getElementById('categories').classList.remove('hidden');
                 if (user.isAdmin) {
                     document.getElementById('adminPanel').classList.remove('hidden');
                     showVoteResults();
+                } else {
+                    document.getElementById('categories').classList.remove('hidden');
+                    showCategories();
                 }
-                showCategories();
             } else {
                 alert("Identifiants incorrects");
             }
@@ -129,7 +133,7 @@
                 categoryDiv.innerHTML = `
                     <h3>${category.name}</h3>
                     ${category.nominees.map((nominee, i) => `
-                        <p>${nominee}: ${category.descriptions[i]}</p>
+                        <p>${nominee}${category.descriptions[i] ? ': ' + category.descriptions[i] : ''}</p>
                         <button onclick="vote(${index}, '${nominee}')">Voter</button>
                     `).join('')}
                 `;
@@ -138,11 +142,13 @@
         }
 
         function vote(categoryIndex, nominee) {
-            votes.push({ category: categories[categoryIndex].name, nominee: nominee });
-            alert(`Vote enregistré pour ${nominee} dans la catégorie ${categories[categoryIndex].name}`);
-            if (!document.getElementById('adminPanel').classList.contains('hidden')) {
-                showVoteResults();
+            if (currentUser.isAdmin) {
+                alert("Les administrateurs ne peuvent pas voter.");
+                return;
             }
+            votes.push({ category: categories[categoryIndex].name, nominee: nominee, voter: currentUser.username });
+            alert(`Vote enregistré pour ${nominee} dans la catégorie ${categories[categoryIndex].name}`);
+            showVoteResults();
         }
 
         function showVoteResults() {
@@ -159,6 +165,18 @@
                     </ul>
                 `;
             });
+        }
+
+        function addCategory() {
+            const categoryName = prompt("Nom de la nouvelle catégorie:");
+            if (categoryName) {
+                const nomineesInput = prompt("Entrez les nommés séparés par des virgules:");
+                const nominees = nomineesInput.split(',').map(n => n.trim());
+                const descriptionsInput = prompt("Entrez les descriptions séparées par des virgules (optionnel):");
+                const descriptions = descriptionsInput ? descriptionsInput.split(',').map(d => d.trim()) : nominees.map(() => "");
+                categories.push({ name: categoryName, nominees: nominees, descriptions: descriptions });
+                showVoteResults();
+            }
         }
     </script>
 </body>
