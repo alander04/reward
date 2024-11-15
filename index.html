@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>REWARS</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -82,20 +83,20 @@
         const BIN_ID = '673785c4e41b4d34e454ef49';
 
         const users = [
-            { username: "alan@20", password: "AL20!", isAdmin: true },
-            { username: "al@K20", password: "AC20*", isAdmin: false },
-            { username: "eo@M19", password: "EO19!", isAdmin: false },
-            { username: "lv@K18", password: "LV18#", isAdmin: false },
-            { username: "fd@B19", password: "FD19&", isAdmin: false },
-            { username: "na@F19", password: "NA19*", isAdmin: false },
-            { username: "mj@D19", password: "MJ19/", isAdmin: false },
-            { username: "se@F19", password: "SE19!", isAdmin: false },
-            { username: "ha@D19", password: "A19&", isAdmin: false },
-            { username: "mj@FT19", password: "FT19*", isAdmin: false },
-            { username: "n@MK20", password: "N20%", isAdmin: false },
-            { username: "h@D19", password: "hD19?", isAdmin: false },
-            { username: "li@L20", password: "LM20&", isAdmin: false },
-            { username: "sr@D19", password: "SR19%", isAdmin: false },
+            { username: "alan@20", passwordHash: CryptoJS.SHA256("2ALa0!").toString(), isAdmin: true },
+            { username: "al@K20", passwordHash: CryptoJS.SHA256("TKA2C0*").toString(), isAdmin: false },
+            { username: "eo@M19", passwordHash: CryptoJS.SHA256("1M9E0!").toString(), isAdmin: false },
+            { username: "lv@K18", passwordHash: CryptoJS.SHA256("KK18LV#").toString(), isAdmin: false },
+            { username: "fd@B19", passwordHash: CryptoJS.SHA256("B1NF9&D").toString(), isAdmin: false },
+            { username: "na@F19", passwordHash: CryptoJS.SHA256("FW1N9A*").toString(), isAdmin: false },
+            { username: "mj@D19", passwordHash: CryptoJS.SHA256("MJ19/DB").toString(), isAdmin: false },
+            { username: "se@F19", passwordHash: CryptoJS.SHA256("FES19N!").toString(), isAdmin: false },
+            { username: "ha@D19", passwordHash: CryptoJS.SHA256("A1HD9&").toString(), isAdmin: false },
+            { username: "mj@FT19", passwordHash: CryptoJS.SHA256("FTM19J*").toString(), isAdmin: false },
+            { username: "n@MK20", passwordHash: CryptoJS.SHA256("MK2N0%").toString(), isAdmin: false },
+            { username: "h@D19", passwordHash: CryptoJS.SHA256("hD19?N").toString(), isAdmin: false },
+            { username: "li@L20", passwordHash: CryptoJS.SHA256("LF2LI0M&").toString(), isAdmin: false },
+            { username: "sr@D19", passwordHash: CryptoJS.SHA256("Sr1D9M%").toString(), isAdmin: false },
         ];
 
         let categories = [
@@ -109,7 +110,9 @@
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const user = users.find(u => u.username === username && u.password === password);
+            const passwordHash = CryptoJS.SHA256(password).toString();
+
+            const user = users.find(u => u.username === username && u.passwordHash === passwordHash);
 
             if (user) {
                 currentUser = user;
@@ -203,20 +206,18 @@
                     `;
                 });
             } catch (error) {
-                console.error('Erreur lors de la récupération des votes:', error);
-                alert("Une erreur est survenue lors de la récupération des votes.");
+                console.error('Erreur lors de la récupération des résultats:', error);
+                alert("Une erreur est survenue lors de l'affichage des résultats.");
             }
         }
 
         function addCategory() {
-            const categoryName = prompt("Nom de la nouvelle catégorie:");
-            if (categoryName) {
-                const nomineesInput = prompt("Entrez les nommés séparés par des virgules:");
-                const nominees = nomineesInput.split(',').map(n => n.trim());
-                const descriptionsInput = prompt("Entrez les descriptions séparées par des virgules (optionnel):");
-                const descriptions = descriptionsInput ? descriptionsInput.split(',').map(d => d.trim()) : nominees.map(() => "");
-                categories.push({ name: categoryName, nominees: nominees, descriptions: descriptions });
-                showVoteResults();
+            const name = prompt("Nom de la nouvelle catégorie:");
+            const nominees = prompt("Nom des candidats (séparés par des virgules):").split(',').map(n => n.trim());
+            const descriptions = prompt("Descriptions des candidats (séparées par des virgules):").split(',').map(d => d.trim());
+            if (name && nominees.length > 0) {
+                categories.push({ name: name, nominees: nominees, descriptions: descriptions });
+                showCategories();
             }
         }
     </script>
