@@ -78,6 +78,9 @@
     </div>
 
     <script>
+        const API_KEY = '$2a$10$sbOYunu2bQXn2o7ZIekLWuevtd9pt2ZJJSQvN8D9.vwWw/noO0Il6';
+        const BIN_ID = '673785c4e41b4d34e454ef49';
+
         const users = [
             { username: "alan@20", password: "AL20!", isAdmin: true },
             { username: "al@K20", password: "AC20*", isAdmin: false },
@@ -101,7 +104,6 @@
             { name: "Meilleur centre de répétition", nominees: ["ORA", "COREX", "PSA", "Domicile", "Centre où sorelle faisait les cours j'ai oublié le nom"], descriptions: ["", "", "", "", ""] },
         ];
 
-        let votes = [];
         let currentUser = null;
 
         function login() {
@@ -141,30 +143,69 @@
             });
         }
 
-        function vote(categoryIndex, nominee) {
+        async function vote(categoryIndex, nominee) {
             if (currentUser.isAdmin) {
                 alert("Les administrateurs ne peuvent pas voter.");
                 return;
             }
-            votes.push({ category: categories[categoryIndex].name, nominee: nominee, voter: currentUser.username });
-            alert(`Vote enregistré pour ${nominee} dans la catégorie ${categories[categoryIndex].name}`);
-            showVoteResults();
+            const newVote = { category: categories[categoryIndex].name, nominee: nominee, voter: currentUser.username };
+            
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': API_KEY
+                    }
+                });
+                const data = await response.json();
+                let votes = data.record.votes || [];
+                votes.push(newVote);
+                
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify({ votes: votes })
+                });
+                
+                alert(`Vote enregistré pour ${nominee} dans la catégorie ${categories[categoryIndex].name}`);
+                showVoteResults();
+            } catch (error) {
+                console.error('Erreur lors du vote:', error);
+                alert("Une erreur est survenue lors de l'enregistrement du vote.");
+            }
         }
 
-        function showVoteResults() {
-            const voteResults = document.getElementById('voteResults');
-            voteResults.innerHTML = '<h3>Résultats des votes</h3>';
-            categories.forEach(category => {
-                const categoryVotes = votes.filter(v => v.category === category.name);
-                voteResults.innerHTML += `
-                    <h4>${category.name}</h4>
-                    <ul>
-                        ${category.nominees.map(nominee => `
-                            <li>${nominee}: ${categoryVotes.filter(v => v.nominee === nominee).length} votes</li>
-                        `).join('')}
-                    </ul>
-                `;
-            });
+        async function showVoteResults() {
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': API_KEY
+                    }
+                });
+                const data = await response.json();
+                const votes = data.record.votes || [];
+                
+                const voteResults = document.getElementById('voteResults');
+                voteResults.innerHTML = '<h3>Résultats des votes</h3>';
+                categories.forEach(category => {
+                    const categoryVotes = votes.filter(v => v.category === category.name);
+                    voteResults.innerHTML += `
+                        <h4>${category.name}</h4>
+                        <ul>
+                            ${category.nominees.map(nominee => `
+                                <li>${nominee}: ${categoryVotes.filter(v => v.nominee === nominee).length} votes</li>
+                            `).join('')}
+                        </ul>
+                    `;
+                });
+            } catch (error) {
+                console.error('Erreur lors de la récupération des votes:', error);
+                alert("Une erreur est survenue lors de la récupération des votes.");
+            }
         }
 
         function addCategory() {
